@@ -20,12 +20,7 @@ def update_sensor_state():
 
 
 def print_command_usage():
-    print("w:       forward")
-    print("s:       back")
-    print("d:       right")
-    print("a:       left")
-    print("[space]: stop")
-    print("c:       seek dock")
+    print("w: forward | s: back | d: right | a: left | SPACE: stop | ESC: quit")
 
 def main():
     if len(sys.argv) != 2:
@@ -45,7 +40,7 @@ def main():
 
         c = getch()
 
-        if c == 'q':
+        if c == '\x1b':
             update_sensor_timer.cancel()
             print("")
             break
@@ -59,8 +54,6 @@ def main():
             roomba_serial_manager.send_command("DRIVE_DIRECT-TURN_LEFT")
         elif c == ' ':
             roomba_serial_manager.send_command("DRIVE_DIRECT-STOP")
-        elif c == 'c':
-            roomba_serial_manager.send_command("SEEK_DOCK")
 
     roomba_serial_manager.send_command("RESET")
 
