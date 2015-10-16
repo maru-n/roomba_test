@@ -26,7 +26,7 @@ def main():
     if len(sys.argv) != 2:
         print("need serial device name.")
         return
-    print_command_usage()
+
     global roomba_serial_manager
     device = sys.argv[1]
     roomba_serial_manager = RoombaSerialManager(device)
@@ -34,8 +34,8 @@ def main():
     roomba_serial_manager.send_command("START")
     roomba_serial_manager.send_command("FULL")
 
+    print_command_usage()
     update_sensor_state()
-
     while True:
 
         c = getch()
