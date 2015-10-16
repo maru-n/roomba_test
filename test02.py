@@ -19,7 +19,19 @@ def update_sensor_state():
     sys.stdout.write("\r" + "battery: " + str(v))
 
 
+def print_command_usage():
+    print("w:       forward")
+    print("s:       back")
+    print("d:       right")
+    print("a:       left")
+    print("[space]: stop")
+    print("c:       seek dock")
+
 def main():
+    if len(sys.argv) != 2:
+        print("need serial device name.")
+        return
+    print_command_usage()
     global roomba_serial_manager
     device = sys.argv[1]
     roomba_serial_manager = RoombaSerialManager(device)
