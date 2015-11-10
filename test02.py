@@ -5,6 +5,7 @@ from test01 import RoombaSerialManager
 from threading import Timer
 import sys
 from getch import getch
+import subprocess
 
 
 roomba_serial_manager = None
@@ -29,6 +30,11 @@ def main():
 
     global roomba_serial_manager
     device = sys.argv[1]
+    lsof = subprocess.Popen(['lsof', device], stdout=subprocess.DEVNULL).wait()
+    if lsof == 0:
+        print("\033[31mError: \033[39m devide %s is used by other process." % device)
+        exit()
+
     roomba_serial_manager = RoombaSerialManager(device)
 
     roomba_serial_manager.send_command("START")
