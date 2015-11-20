@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from test01 import RoombaSerialManager
+from roomba_serial_manager import RoombaSerialManager
 from threading import Timer
 import sys
 from getch import getch
