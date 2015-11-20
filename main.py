@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from roomba_serial_manager import RoombaController
+from roomba import RoombaController
 from threading import Timer
 import sys
 from getch import getch
@@ -17,7 +17,7 @@ SPIN_SPEED = 100
 
 def update_sensor_state():
     global roomba_controller
-    v = roomba_controller.get_battery()
+    v = roomba_controller.fetch_battery()
     sys.stdout.write("\r" + "battery: " + str(v))
     global update_sensor_timer
     update_sensor_timer = Timer(0.5, update_sensor_state)
