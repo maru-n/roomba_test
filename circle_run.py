@@ -40,7 +40,7 @@ def main():
         sys.stdout.write("\r" + "%f"%(time.time()-start_time))
 
     rsm.send_command("DRIVE_DIRECT-STOP")
-    #rsm.send_command("RESET")
+    rsm.send_command("RESET")
 
 
 if __name__ == '__main__':
