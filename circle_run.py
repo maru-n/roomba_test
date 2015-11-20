@@ -30,14 +30,15 @@ def main():
 
     rsm.send_command("START")
     rsm.send_command("FULL")
-
+    time.sleep(1)
     start_time = time.time()
     vl = int(omg * (radius))
     vr = int(omg * (radius + ROOMBA_DIA))
+    print(vl, vr)
     if orient == "L":
         byte_cmd = struct.pack(">Bhh", 145, vr, vl)
     elif orient == "R":
-        byte_cmd = struct.pack(">Bhh", 145, vr, vl)
+        byte_cmd = struct.pack(">Bhh", 145, vl, vr)
     else:
         return
     rsm.write_code(byte_cmd)
