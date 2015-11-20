@@ -8,14 +8,15 @@ import sys
 
 
 def main():
-    if len(sys.argv) != 5:
-        print("circle_run.py [serial device name] [radius (mm)] [duration (sec)] [angular rate (rad/sec)]")
+    if len(sys.argv) != 6:
+        print("circle_run.py [serial device name] [radius (mm)] [duration (sec)] [angular rate (rad/sec)] [L/R]")
         return
 
     device = sys.argv[1]
     radius = float(sys.argv[2])
     duration = float(sys.argv[3])
     omg = float(sys.argv[4])
+    orient = sys.argv[5]
 
     print("Device:", device)
     print("Radius:", radius, "mm")
@@ -33,7 +34,12 @@ def main():
     start_time = time.time()
     vl = int(omg * (radius))
     vr = int(omg * (radius + ROOMBA_DIA))
-    byte_cmd = struct.pack(">Bhh", 145, vr, vl)
+    if orient == "L":
+        byte_cmd = struct.pack(">Bhh", 145, vr, vl)
+    elif orient == "R":
+        byte_cmd = struct.pack(">Bhh", 145, vr, vl)
+    else:
+        return
     rsm.write_code(byte_cmd)
 
     while (time.time() - start_time) <= duration:
