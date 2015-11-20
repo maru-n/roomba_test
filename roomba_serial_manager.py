@@ -5,6 +5,44 @@ import serial
 import struct
 import sys
 
+class RoombaController(object):
+    """docstring for RoombaController"""
+    def __init__(self, device_name):
+        super(RoombaController, self).__init__()
+        self.serial_manager = RoombaSerialManager(device_name)
+        self.serial_manager.send_command('START')
+        self.serial_manager.send_command('SAFE')
+
+    def stop(self):
+        self.drive(0, 0)
+
+    def forward(self, velocity):
+        self.drive(velocity, 0)
+
+    def backward(self, velocity):
+        self.drive(-velocity, 0)
+
+    def spin_right(self, velocity):
+        self.set_wheel_speed(-velocity, velocity)
+
+    def spin_left(self, velocity):
+        self.set_wheel_speed(velocity, -velocity)
+
+    def set_wheel_speed(self, right_velocity, left_velocity):
+        self.serial_manager.send_command('DRIVE_DIRECT', right_velocity, left_velocity)
+
+    def get_battery(self):
+        v = self.serial_manager.get_sensor_val("BATTERY_CARGE")
+        return v
+
+    def drive(self, velocity, radius):
+        self.serial_manager.send_command('DRIVE', velocity, radius)
+
+    def close(self):
+        self.serial_manager.send_command("RESET")
+        self.serial_manager.close()
+        self.serial_manager = None
+
 
 class RoombaSerialManager(object):
     """docstring for RoombaSerialManager"""
@@ -23,10 +61,7 @@ class RoombaSerialManager(object):
         if ret != len(code_list):
             Exception("error occured on write serial code.")
 
-    def send_command(self, command):
-        DRIVE_SPEED = 200
-        TURN_SPEED = 100
-
+    def send_command(self, command, *args):
         if command == 'START':
             self.write_code([128])
         elif command == 'RESET':
@@ -38,27 +73,19 @@ class RoombaSerialManager(object):
         elif command == 'FULL':
             self.write_code([132])
         elif command == 'DIGIT_LEDS_ASCII':
+            # TODO: Dummy data
             self.write_code([164, 65, 66, 67, 68])
         elif command == 'SEEK_DOCK':
             self.write_code([143])
-        # TODO: can I use byte() or to_bytes() on python 3?
-        elif command == 'DRIVE_DIRECT-STOP':
-            byte_cmd = struct.pack(">Bhh", 145, 0, 0)
+        elif command == 'DRIVE':
+            byte_cmd = struct.pack(">Bhh", 137, args[0], args[1])
             self.write_code(byte_cmd)
-        elif command == 'DRIVE_DIRECT-FORWARD':
-            byte_cmd = struct.pack(">Bhh", 145, DRIVE_SPEED, DRIVE_SPEED)
-            self.write_code(byte_cmd)
-        elif command == 'DRIVE_DIRECT-BACK':
-            byte_cmd = struct.pack(">Bhh", 145, -DRIVE_SPEED, -DRIVE_SPEED)
-            self.write_code(byte_cmd)
-        elif command == 'DRIVE_DIRECT-TURN_RIGHT':
-            byte_cmd = struct.pack(">Bhh", 145, -TURN_SPEED, TURN_SPEED)
-            self.write_code(byte_cmd)
-        elif command == 'DRIVE_DIRECT-TURN_LEFT':
-            byte_cmd = struct.pack(">Bhh", 145, TURN_SPEED, -TURN_SPEED)
+        elif command == 'DRIVE_DIRECT':
+            byte_cmd = struct.pack(">Bhh", 145, args[0], args[1])
             self.write_code(byte_cmd)
         elif command == 'SENSORS':
-            self.write_code([142])
+            byte_cmd = struct.pack(">BB", 142, args[0])
+
         else:
             Exception("Invalid command in send_command(): " + command)
 
@@ -68,14 +95,16 @@ class RoombaSerialManager(object):
             Exception("Couldn't read all serial datas.")
         return bytes
 
-    def get_sensor_val(self, command):
-        self.send_command('SENSORS')
-        if command == 'BATTERY_CARGE':
-            self.write_code([25])
+    def get_sensor_val(self, name):
+        if name == 'BATTERY_CARGE':
+            self.send_command('SENSORS', 25)
             ret_bytes = self.read_bytes(2)
             return int.from_bytes(ret_bytes, 'big')
         else:
-            Exception("Invalid command in get_sensor_val(): " + command)
+            Exception("Invalid sensor name in get_sensor_val(): " + name)
+
+    def close(self):
+        self.serial.close()
 
 
 def main():
